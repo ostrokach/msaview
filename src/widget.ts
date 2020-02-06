@@ -1,10 +1,7 @@
 // Copyright (c) Alexey Strokach
 // Distributed under the terms of the Modified BSD License.
-import {
-  DOMWidgetModel,
-  DOMWidgetView,
-  ISerializers
-} from "@jupyter-widgets/base";
+
+import { DOMWidgetModel, DOMWidgetView, ISerializers } from "@jupyter-widgets/base";
 import * as msa from "msa";
 import "../css/msa.css";
 import "../css/widget.css";
@@ -20,7 +17,7 @@ export class ExampleModel extends DOMWidgetModel {
       _view_name: ExampleModel.view_name,
       _view_module: ExampleModel.view_module,
       _view_module_version: ExampleModel.view_module_version,
-      value: "Hello World"
+      value: ""
     };
   }
 
