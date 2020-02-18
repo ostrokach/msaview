@@ -16,9 +16,7 @@ export class MSAModel extends DOMWidgetModel {
       _model_module_version: MSAModel.model_module_version,
       _view_name: MSAModel.view_name,
       _view_module: MSAModel.view_module,
-      _view_module_version: MSAModel.view_module_version,
-
-      initialSeqs: []
+      _view_module_version: MSAModel.view_module_version
     };
   }
 
@@ -39,14 +37,8 @@ export class MSAView extends DOMWidgetView {
   render() {
     this.el.classList.add("jp-RenderedMSA");
     let msaDiv = document.createElement("div");
-    let initialSeqs = [
-      { id: "0", name: "Reference", seq: "AAA", ref: true },
-      { id: "1", name: "Target", seq: "---", ref: true }
-    ];
-    console.log("initialSeqs:", initialSeqs);
     this.msa = new MSA.msa({
       el: msaDiv,
-      // seqs: initialSeqs,
       vis: {
         labelId: false,
         sequences: true,
@@ -61,7 +53,7 @@ export class MSAView extends DOMWidgetView {
     });
     this.el.appendChild(msaDiv);
 
-    this.model.on("change:value", this.value_changed, this);
+    this.model.on("change:value", this.value_changed.bind(this), this);
 
     // this.model.on("msg:custom", this.on_msg, this);
   }
@@ -107,6 +99,6 @@ export class MSAView extends DOMWidgetView {
     func.apply(target, new_args);
     // this.msa.render();
   }
+
   msa: any;
-  menu: any;
 }
