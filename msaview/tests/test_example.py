@@ -4,11 +4,11 @@
 # Copyright (c) Alexey Strokach.
 # Distributed under the terms of the Modified BSD License.
 
-import pytest
+import pytest  # noqa
 
-from ..example import ExampleWidget
+from ..example import MSAView
 
 
 def test_example_creation_blank():
-    w = ExampleWidget()
+    w = MSAView()
     assert w.value == 'Hello World'
