@@ -1,6 +1,6 @@
 {
   "name": "msaview",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A set of Jupyter widgets useful for analyzing biological data.",
   "keywords": [
     "jupyter",
