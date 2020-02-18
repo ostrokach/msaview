@@ -26,3 +26,17 @@ the nbextension:
 ```bash
 jupyter nbextension enable --py [--sys-prefix|--user|--system] msaview
 ```
+
+## Development
+
+Install the Python package using `pip`:
+
+```bash
+pip install -e .
+```
+
+Install the Javascript package using `jupyter` (not sure if you need to run `npm run build` first?):
+
+```bash
+jupyter labextension install .
+```
