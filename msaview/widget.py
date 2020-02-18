@@ -9,18 +9,18 @@ TODO: Add module docstring
 """
 
 from ipywidgets import DOMWidget
-from traitlets import Unicode
+from traitlets import Dict, Unicode, List
 from ._frontend import module_name, module_version
 
 
-class ExampleWidget(DOMWidget):
-    """TODO: Add docstring here
-    """
-    _model_name = Unicode('ExampleModel').tag(sync=True)
+class MSAView(DOMWidget):
+    """Widget controlling the display of a multiple sequence alignment."""
+
+    _model_name = Unicode("MSAModel").tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
     _model_module_version = Unicode(module_version).tag(sync=True)
-    _view_name = Unicode('ExampleView').tag(sync=True)
+    _view_name = Unicode("MSAView").tag(sync=True)
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    value = Unicode('Hello World').tag(sync=True)
+    value = List().tag(sync=True)
