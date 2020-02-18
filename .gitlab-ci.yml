@@ -1,0 +1,194 @@
+default:
+  image: condaforge/linux-anvil-cos7-x86_64:latest
+
+stages:
+  - pages
+  - linting
+  - build
+  - test
+  - doc
+  - deploy
+
+# === Variables ===
+
+variables:
+  PACKAGE_VERSION: "0.1.9"
+  PYTHON_VERSION: "3.7"
+
+# === Configurations ===
+
+.configure:
+  before_script:
+    # Set conda envs and pkgs dirs
+    - |
+      cat <<EOF > ~/.condarc
+      channel_priority: true
+      channels:
+        - pytorch
+        - conda-forge
+        - defaults
+        - kimlab
+        - ostrokach-forge
+        - bioconda
+        - salilab
+        - omnia
+      EOF
+  except:
+    variables:
+      - $UPDATE_PAGES
+      - $CI_COMMIT_MESSAGE =~ /\[pages\]/i
+
+# === Lint ===
+
+lint:
+  stage: linting
+  extends: .configure
+  script:
+    - conda create -n lint -q "python=${PYTHON_VERSION}" isort toml flake8 mypy black
+    - source activate lint
+    - python -m isort -p ${CI_PROJECT_NAME} -c
+    - python -m flake8
+    - python -m black --config pyproject.toml --check .
+    # MyPy does not support namespace packages until this issue gets resolved:
+    # https://github.com/python/mypy/issues/1645
+    - python -m mypy -p ${CI_PROJECT_NAME} || true
+
+# === Build ===
+
+build:
+  stage: build
+  extends: .configure
+  script:
+    - conda install -yq conda conda-build conda-verify conda-forge-pinning
+    - cd "${CI_PROJECT_DIR}/.ci/conda"
+    - conda build .
+      --variant-config-files /opt/conda/conda_build_config.yaml
+      --python $PYTHON_VERSION
+      --output-folder "$CI_PROJECT_DIR/conda-bld"
+  artifacts:
+    paths:
+      - conda-bld
+
+# === Test ===
+
+.test:
+  stage: test
+  extends: .configure
+  script:
+    # Create conda environment for testing
+    - conda update -yq conda
+    - conda create -n test -q -c file://${CI_PROJECT_DIR}/conda-bld --strict-channel-priority
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov || true
+    - source activate test
+    # Run tests
+    - PKG_INSTALL_DIR=$(python -c "import proteinsolver; print(proteinsolver.__path__[0])")
+    - python -m pytest
+      -c setup.cfg
+      --cov="${PKG_INSTALL_DIR}"
+      --cov-config=setup.cfg
+      --color=yes
+      "tests/"
+    # Coverage
+    - mkdir coverage
+    - mv .coverage coverage
+  coverage: /^TOTAL.* (\d+\%)/
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - coverage
+
+# === Docs ===
+
+# NB: Has to be called "docs" for the pages script to work.
+.docs:
+  stage: doc
+  extends: .configure
+  script:
+    # Create conda environment for testing
+    - conda update -yq conda
+    - conda create -n test -q -c file://${CI_PROJECT_DIR}/conda-bld --strict-channel-priority
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} nbconvert ipython ipykernel pandoc || true
+    - source activate test
+    - pip install -q sphinx sphinx_rtd_theme recommonmark sphinx-markdown-tables nbsphinx coverage
+    # Build docs
+    - sphinx-build ${CI_PROJECT_DIR}/docs public
+    # Coverage
+    - ls -al
+    - coverage report || true
+    - coverage html || true
+    - mv htmlcov public/ || true
+  coverage: /^TOTAL.* (\d+\%)/
+  dependencies:
+    - build
+    - test
+  artifacts:
+    paths:
+      - public
+    when: always
+
+# === Deploy ===
+
+deploy:
+  stage: deploy
+  extends: .configure
+  script:
+    - anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/*/*.tar.bz2 -u ostrokach-forge --no-progress
+  dependencies:
+    - build
+  only:
+    - tags
+
+# === Pages ===
+
+.pages:
+  stage: deploy
+  before_script:
+    - sudo yum update -y -q
+    - sudo yum install -y -q unzip
+    - pip install jinja2 python-gitlab
+  script:
+    # Set environment variables
+    - export OUTPUT_DIR="./public/"
+    # Add current docs to public
+    - mv -f public latest || true
+    - mkdir -p ${OUTPUT_DIR}
+    - mv -f latest ${OUTPUT_DIR}/latest || true
+    - if [[ -n ${CI_TAG_NAME} && -d ${OUTPUT_DIR}/latest ]] ; then
+      cp -r ${OUTPUT_DIR}/latest ${OUTPUT_DIR}/${CI_TAG_NAME} ;
+      fi
+    # Download all previous docs
+    - python .ci/pages/download_docs.py
+      --project-id ${CI_PROJECT_ID}
+      --job-name docs
+      --private-token ${CI_DOCS_TOKEN}
+      --output-dir ${OUTPUT_DIR}
+  needs:
+    - docs
+  artifacts:
+    paths:
+      - public
+
+.pages:
+  stage: pages
+  before_script:
+    - sudo yum update -y -q
+    - sudo yum install -y -q unzip
+    - pip install jinja2 python-gitlab
+  script:
+    # Set environment variables
+    - export OUTPUT_DIR="./public"
+    - mkdir -p ${OUTPUT_DIR}
+    # Download all previous docs
+    - python .ci/pages/download_docs.py
+      --project-id ${CI_PROJECT_ID}
+      --job-name docs
+      --private-token ${CI_DOCS_TOKEN}
+      --output-dir ${OUTPUT_DIR}
+  artifacts:
+    paths:
+      - public
+  only:
+    variables:
+      - $UPDATE_PAGES
+      - $CI_COMMIT_MESSAGE =~ /\[pages\]/i
