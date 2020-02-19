@@ -5,8 +5,8 @@ stages:
   - pages
   - linting
   - build
-  # - test
-  # - doc
+  - test
+  - doc
   - deploy
 
 # === Variables ===
