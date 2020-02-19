@@ -204,4 +204,3 @@ def setup(app):
             app.add_javascript(fname)
 
     app.connect("builder-inited", add_scripts)
-
