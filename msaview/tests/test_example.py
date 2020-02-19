@@ -11,4 +11,4 @@ from ..example import MSAView
 
 def test_example_creation_blank():
     w = MSAView()
-    assert w.value == 'Hello World'
+    assert w.value == "Hello World"
