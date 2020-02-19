@@ -1,28 +1,28 @@
 package:
-    name: msaview
-    version: 0.1.0
+  name: msaview
+  version: 0.1.0
   
-  source:
-    path: ../../
-  
-  build:
-    script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv
-    number: 0
-    noarch: python
-  
-  requirements:
-    host:
-      - nodejs
-      - python
-    run:
-      - python
-      - ipywidgets
-  
-  test:
-    imports:
-      - msaview
-  
-  about:
-    home: https://gitlab.com/ostrokach/msaview
-    license: MIT License
-    summary: "IPyWidget wrapping the MSA multiple sequence alignment viewer."
+source:
+  path: ../../
+
+build:
+  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv
+  number: 0
+  noarch: python
+
+requirements:
+  host:
+    - nodejs
+    - python
+  run:
+    - python
+    - ipywidgets
+
+test:
+  imports:
+    - msaview
+
+about:
+  home: https://gitlab.com/ostrokach/msaview
+  license: MIT License
+  summary: "IPyWidget wrapping the MSA multiple sequence alignment viewer."
