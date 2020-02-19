@@ -2,5 +2,5 @@
 
 set -ev
 
-npm build
+npm run build
 ${PYTHON} -m pip install . --no-deps --ignore-installed -vv
