@@ -11,7 +11,8 @@ package:
     noarch: python
   
   requirements:
-    build:
+    host:
+      - nodejs
       - python
     run:
       - python
