@@ -1,7 +1,7 @@
 {
   "name": "msaview",
-  "version": "0.1.1",
-  "description": "A set of Jupyter widgets useful for analyzing biological data.",
+  "version": "0.1.3",
+  "description": "Jupyter widget for visualizing multiple sequence alignments.",
   "keywords": [
     "jupyter",
     "jupyterlab",
